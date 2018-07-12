@@ -15,7 +15,7 @@
     $message    = nl2br( htmlspecialchars($_POST['message'], ENT_QUOTES) );
     $result     = array();
 
-
+ //
     if(empty($name)){
 
         $result = array( 'response' => 'error', 'empty'=>'name', 'message'=>'<strong>Error!</strong> Name is empty.' );
