@@ -419,6 +419,7 @@ button:focus,
     position      : relative;
     display       : block;
     margin-bottom : 30px;
+    min-height: 200px;
     }
 
 .portfolio-item .portfolio-thumb img {
