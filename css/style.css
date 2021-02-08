@@ -442,9 +442,13 @@ button:focus,
 
 .portfolio-item .portfolio-info h3 {
     margin      : 0;
-    line-height : 1;
+    line-height : 2;
     color       : #ffffff;
+	background-color: rgb(42, 84, 245);
+	text-align: center;
+
     }
+
 
 .portfolio-item .portfolio-info small {
     color : #ffffff;
