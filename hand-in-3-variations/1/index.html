@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>Project Hand In 3</title>
+  </head>
+  <body>
+	<h1 align="center">Legend</h1>
+	<div id="shelf-svg-top">
+			  <img src="legend.png" class="center"/>
+	</div>
+        <div id="shelf" class="shelf-wrapper">
+		
+          <svg id="shelf-svg" >
+          </svg>
+        </div>
+      </div>
+	  
+    </div>
+    
+    
+  </body>
+  <script src="d3.min.js"></script>
+  <script src="data.js"></script>
+
+</html>
+  <script>
+  
+  // green 61FA66 
+ //pink FFA5AB
+	
+	var shelf_number = 1;
+	var height_shelf = 100;
+	var height_book = 70; // between 50 and 70
+	var width_book = 21; //between 15-21
+	var space_between_books = 2;
+	var start_book = 10;
+	
+	var book_Height_Price_Scale = d3.scaleLinear()
+				  .domain([3, 105])
+				  .range([50, 95]);
+	var book_Width_Reviews_Scale = d3.scaleLinear()
+				  .domain([32, 80000])
+				  .range([15, 55]);
+	var book_Inner_Width_Rating_Scale = d3.scaleLinear()
+				  .domain([3.3, 4.9])
+				  .range([0, 30]);
+				  
+	for(var j=1; j<=11; j++){
+		var makeShelf = d3.select("#shelf-svg").append("rect")
+				  .attr("x", 0)
+				  .attr("y", height_shelf)
+				  .attr("width", 1200)
+				  .attr("height", 50)
+				  .attr("class", 'one-shelf');
+
+		for(var i=0; i<50; i++){
+				width_book = book_Width_Reviews_Scale(data[i*j]['Reviews']);
+				height_book = book_Height_Price_Scale(data[i*j]['Price']);
+				height_inner_book = book_Inner_Width_Rating_Scale(data[i*j]['User Rating']);
+				
+				var makeBook = d3.select("#shelf-svg").append("rect")
+				  .attr("x", start_book)
+				  .attr("y", height_shelf-height_book)
+				  .attr("width", width_book)
+				  .attr("height", height_book)
+				  .style("stroke", "#53504D");
+				  
+				  if(data[i*j].Genre == "Non Fiction"){
+					makeBook.style("fill", "#61FA66");
+				  }else {
+					makeBook.style("fill", "#FFA5AB");
+				  }  
+				  
+				var makeInnerBook = d3.select("#shelf-svg").append("rect")
+				  .attr("x", start_book)
+				  .attr("y", height_shelf-height_inner_book)
+				  .attr("width", width_book)
+				  .attr("height", height_inner_book)
+				  .style("stroke", "#53504D");
+				  
+				  if(data[i*j].Genre == "Non Fiction"){
+					makeInnerBook.style("fill", "#07ED0F");
+				  }else {
+					makeInnerBook.style("fill", "#FF4754");
+				  }  
+				  
+			
+		
+				  start_book = start_book + width_book + space_between_books;
+			}
+		start_book = 10;
+		height_shelf = height_shelf + 150;
+		console.log(i*j)
+
+		
+	}
+	
+	var year = 2009;
+	var text_y = 100;
+	for(var j=1; j<=11; j++){
+		var makeInnerShelf = d3.select("#shelf-svg").append("text")
+					  .attr("x", 10)
+					  .attr("y", text_y+20)
+					  .attr("fill", 'white')
+					  .text(year);
+					  
+		text_y = text_y + 150;
+		year++;
+	}
+	
+</script>
