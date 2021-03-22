@@ -5,108 +5,93 @@
     <title>Project Hand In 3</title>
   </head>
   <body>
-	<h1 align="center">Legend</h1>
-	<div id="shelf-svg-top">
-			  <img src="legend.png" class="center"/>
-	</div>
-        <div id="shelf" class="shelf-wrapper">
-		
-          <svg id="shelf-svg" >
-          </svg>
-        </div>
-      </div>
-	  
-    </div>
+	<h1 align="center">Treemap</h1>
+	<p align="center"> The idea was to create a stacked treemap for each year. The color represents if its fiction or non fiction, the height of the inner boxes represents price of each individual book. The opacity represents the user rating.</p>
+	<div id="my_dataviz" align="center"></div>
     
     
   </body>
-  <script src="d3.min.js"></script>
+  <script src="https://d3js.org/d3.v4.js"></script>
   <script src="data.js"></script>
 
 </html>
   <script>
+  // set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 10, left: 10},
+  width = 445 - margin.left - margin.right,
+  height = 445 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+
+  // Give the data to this cluster layout:
+  var root = d3.hierarchy(data).sum(function(d){ console.log(d.Price); return d.Price;}) // Here the size of each leave is given in the 'value' field in input data
+
   
-  // green 61FA66 
- //pink FFA5AB
-	
-	var shelf_number = 1;
-	var height_shelf = 100;
-	var height_book = 70; // between 50 and 70
-	var width_book = 21; //between 15-21
-	var space_between_books = 2;
-	var start_book = 10;
-	
-	var book_Height_Price_Scale = d3.scaleLinear()
-				  .domain([3, 105])
-				  .range([50, 95]);
-	var book_Width_Reviews_Scale = d3.scaleLinear()
-				  .domain([32, 80000])
-				  .range([15, 55]);
-	var book_Inner_Width_Rating_Scale = d3.scaleLinear()
-				  .domain([3.3, 4.9])
-				  .range([0, 30]);
-				  
-	for(var j=1; j<=11; j++){
-		var makeShelf = d3.select("#shelf-svg").append("rect")
-				  .attr("x", 0)
-				  .attr("y", height_shelf)
-				  .attr("width", 1200)
-				  .attr("height", 50)
-				  .attr("class", 'one-shelf');
+// Then d3.treemap computes the position of each element of the hierarchy
+  d3.treemap()
+    .size([width, height])
+    .paddingTop(28)
+    .paddingRight(7)
+    .paddingInner(3)      // Padding between each rectangle
+    //.paddingOuter(6)
+    //.padding(20)
+    (root)
 
-		for(var i=0; i<50; i++){
-				width_book = book_Width_Reviews_Scale(data[i*j]['Reviews']);
-				height_book = book_Height_Price_Scale(data[i*j]['Price']);
-				height_inner_book = book_Inner_Width_Rating_Scale(data[i*j]['User Rating']);
-				
-				var makeBook = d3.select("#shelf-svg").append("rect")
-				  .attr("x", start_book)
-				  .attr("y", height_shelf-height_book)
-				  .attr("width", width_book)
-				  .attr("height", height_book)
-				  .style("stroke", "#53504D");
-				  
-				  if(data[i*j].Genre == "Non Fiction"){
-					makeBook.style("fill", "#61FA66");
-				  }else {
-					makeBook.style("fill", "#FFA5AB");
-				  }  
-				  
-				var makeInnerBook = d3.select("#shelf-svg").append("rect")
-				  .attr("x", start_book)
-				  .attr("y", height_shelf-height_inner_book)
-				  .attr("width", width_book)
-				  .attr("height", height_inner_book)
-				  .style("stroke", "#53504D");
-				  
-				  if(data[i*j].Genre == "Non Fiction"){
-					makeInnerBook.style("fill", "#07ED0F");
-				  }else {
-					makeInnerBook.style("fill", "#FF4754");
-				  }  
-				  
-			
-		
-				  start_book = start_book + width_book + space_between_books;
-			}
-		start_book = 10;
-		height_shelf = height_shelf + 150;
-		console.log(i*j)
+  // And a opacity scale
+  var opacity = d3.scaleLinear()
+    .domain([3.3, 4.9])
+    .range([.1,1])
+ // use this information to add rectangles:
+  svg
+    .selectAll("rect")
+    .data(root.leaves())
+    .enter()
+    .append("rect")
+      .attr('x', function (d) { return d.x0; })
+      .attr('y', function (d) { return d.y0; })
+      .attr('width', function (d) { return d.x1 - d.x0; })
+      .attr('height', function (d) { return d.y1 - d.y0; })
+      .style("stroke", "black")
+      .style("fill", function(d){ 
+		  if(d.data.Genre == "Non Fiction"){ 
+			 return "#07ED0F"; 
+		   }else {
+			 return "#FF4754"; 
+		  }
+	 
+	  } )
+      .style("opacity", function(d){ return opacity(d.data['User Rating'])})
+	  
+	  
+  // and to add the text labels
+  svg
+    .selectAll("text")
+    .data(root.leaves())
+    .enter()
+    .append("text")
+      .attr("x", function(d){ return d.x0+5})    // +10 to adjust position (more right)
+      .attr("y", function(d){ return d.y0+20})    // +20 to adjust position (lower)
+      .text(function(d){ return d.data.Author })
+      .attr("font-size", "10px")
+      .attr("fill", "white")
+// Add title for the 3 groups
+  svg
+    .selectAll("titles")
+    .data(root.descendants().filter(function(d){return d.depth==1}))
+    .enter()
+    .append("text")
+      .attr("x", function(d){ return d.x0})
+      .attr("y", function(d){ return d.y0+21})
+      .text(function(d){ return d.data.name })
+      .attr("font-size", "19px")
 
-		
-	}
-	
-	var year = 2009;
-	var text_y = 100;
-	for(var j=1; j<=11; j++){
-		var makeInnerShelf = d3.select("#shelf-svg").append("text")
-					  .attr("x", 10)
-					  .attr("y", text_y+20)
-					  .attr("fill", 'white')
-					  .text(year);
-					  
-		text_y = text_y + 150;
-		year++;
-	}
 	
 </script>

@@ -5,8 +5,19 @@
     <title>Project Hand In 3</title>
   </head>
   <body>
-	<h1 align="center">Legend</h1>
-	<div id="my_dataviz"></div>
+	<h1 align="center">Circular Barchart</h1>
+	<p align="center">It’s a circular bar graph with two series. First the user selects the year (which is not functional but will be functional as part of next hand in), then the 50 books of that year are displayed. The length of blue bars represents the price. The labels are Author’s names.  The inner red radius is for user rating. </p>
+	<div align="center">
+	<label for="cars">Choose a Year:</label>
+
+		<select name="cars" id="cars">
+		  <option value="volvo">2009</option>
+		  <option value="saab">2010</option>
+		  <option value="mercedes">2011</option>
+		  <option value="audi">2012</option>
+		</select>
+	</div>
+	<div id="my_dataviz" align="center"></div>
     
     
   </body>
@@ -31,8 +42,7 @@ var svg = d3.select("#my_dataviz")
   .append("g")
     .attr("transform", "translate(" + (width / 2 + margin.left) + "," + (height / 2 + margin.top) + ")");
 
-d3.csv("data.csv", function(data) {
-
+	
   // X scale: common for 2 data series
   var x = d3.scaleBand()
       .range([0, 2 * Math.PI])    // X axis goes from 0 to 2pi = all around the circle. If I stop at 1Pi, it will be around a half circle
@@ -42,12 +52,12 @@ d3.csv("data.csv", function(data) {
   // Y scale outer variable
   var y = d3.scaleRadial()
       .range([innerRadius, outerRadius])   // Domain will be define later.
-      .domain([0, 13000]); // Domain of Y is from 0 to the max seen in the data
+      .domain([0, 108]); // Domain of Y is from 0 to the max seen in the data
 
   // Second barplot Scales
   var ybis = d3.scaleRadial()
-      .range([innerRadius, 5])   // Domain will be defined later.
-      .domain([0, 13000]);
+      .range([0, 70])   // Domain will be defined later.
+      .domain([3.3, 4.9]);
 
   // Add the bars
   svg.append("g")
@@ -59,14 +69,41 @@ d3.csv("data.csv", function(data) {
       .attr("class", "yo")
       .attr("d", d3.arc()     // imagine your doing a part of a donut plot
           .innerRadius(innerRadius)
-          .outerRadius(function(d) { return y(d['Price']); })
+          .outerRadius(function(d) { console.log(y(d['Price']));return y(d['Price']); })
           .startAngle(function(d) { return x(d.Author); })
           .endAngle(function(d) { return x(d.Author) + x.bandwidth(); })
           .padAngle(0.01)
           .padRadius(innerRadius))
 
-  
+  // Add the labels
+  svg.append("g")
+      .selectAll("g")
+      .data(data)
+      .enter()
+      .append("g")
+        .attr("text-anchor", function(d) { return (x(d.Author) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "end" : "start"; })
+        .attr("transform", function(d) { return "rotate(" + ((x(d.Author) + x.bandwidth() / 2) * 180 / Math.PI - 90) + ")"+"translate(" + (y(d['Price'])+10) + ",0)"; })
+      .append("text")
+        .text(function(d){return(d.Author)})
+        .attr("transform", function(d) { return (x(d.Author) + x.bandwidth() / 2 + Math.PI) % (2 * Math.PI) < Math.PI ? "rotate(180)" : "rotate(0)"; })
+        .style("font-size", "11px")
+        .attr("alignment-baseline", "middle")
 
-});
+// Add the second series
+  svg.append("g")
+    .selectAll("path")
+    .data(data)
+    .enter()
+    .append("path")
+      .attr("fill", "red")
+      .attr("d", d3.arc()     // imagine your doing a part of a donut plot
+          .innerRadius( function(d) { return ybis(0) })
+          .outerRadius( function(d) { return ybis(d['User Rating']); })
+          .startAngle(function(d) { return x(d.Author); })
+          .endAngle(function(d) { return x(d.Author) + x.bandwidth(); })
+          .padAngle(0.01)
+          .padRadius(innerRadius))
+
+
 	
 </script>
