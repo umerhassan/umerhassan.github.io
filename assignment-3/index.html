@@ -32,6 +32,7 @@
      }
 </style>
 <body>
+<p align="center">Click on the country on the map to select/deselect. The change will also be updated on the scatterplot below with green dot. Draw a rectangle on the scatterplot to select the points. Click anywhere on the scatterplot to deselect the points.</p>
 <script src="d3.js"></script>
 <script src="topojson.v1.min.js"></script>
 <script>
@@ -61,6 +62,7 @@
     const map = svg
         .append('g')
         .attr('class', 'map');
+
 
     const scatterplot = svg
         .append('g')
