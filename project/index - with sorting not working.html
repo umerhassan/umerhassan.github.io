@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+<!--      <script src="https://kit.fontawesome.com/cbda2736a7.js" crossorigin="anonymous"></script>-->
+    <title>Project Hand In 3</title>
+  </head>
+  <body>
+	<h1 align="center">Legend</h1>
+	<div id="shelf-svg-top">
+			  <img src="legend.png" class="center"/>
+	</div>
+    Filter By:
+<!--    <i class="fas fa-dollar-sign"></i>-->
+   <select id="filterColumn">
+        <option disabled selected value> ---- </option>
+    </select>
+   <select id="filterValue">
+        <option disabled selected value> ---- </option>
+    </select>
+    <br><br>
+    Sort By:
+    <select id="sortColumn">
+        <option disabled selected value> ---- </option>
+    </select>
+    <select id="sortValue">
+        <option disabled selected value> ---- </option>
+    </select>
+    <br><br>
+    <div class="sticky" align="center" id="bookdetails"></div>
+        <div id="shelf" class="shelf-wrapper">
+		
+          <svg id="shelf-svg" >
+          </svg>
+        </div>
+      </div>
+	  
+    </div>
+    
+    
+  </body>
+  <script src="d3.min.js"></script>
+<!--  <script src="data.js"></script>-->
+
+</html>
+  <script>
+
+      var filterObject = {
+          "Genre": ["Fiction", "Non Fiction"],
+          "Price": ["$3-24", "$25-150"]
+      }
+      var sortObject = {
+          "Name": ["A-Z", "Z-A"],
+          "User Rating": ["High to Low", "High to Low"]
+      }
+  
+  // green 61FA66 
+ //pink FFA5AB
+
+      var filterColumn = document.getElementById("filterColumn");
+      var filterValue = document.getElementById("filterValue");
+      for (var x in filterObject) {
+          filterColumn.options[filterColumn.options.length] = new Option(x, x);
+      }
+      filterColumn.onchange = function() {
+          filterValue.length = 1;
+          filterValue.selectedIndex = "0";
+          sortValue.selectedIndex = "0";
+          sortColumn.selectedIndex = "0";
+          var z = filterObject[filterColumn.value];
+          for (var i = 0; i < z.length; i++) {
+              console.log(z[i]);
+              filterValue.options[filterValue.options.length] = new Option(z[i], z[i]);
+          }
+      }
+
+      var sortColumn = document.getElementById("sortColumn");
+      var sortValue = document.getElementById("sortValue");
+      for (var x in sortObject) {
+          sortColumn.options[sortColumn.options.length] = new Option(x, x);
+      }
+      sortColumn.onchange = function() {
+          sortValue.length = 1;
+          sortValue.selectedIndex = "0";
+          filterValue.selectedIndex = "0";
+          filterColumn.selectedIndex = "0";
+          var z = sortObject[sortColumn.value];
+          for (var i = 0; i < z.length; i++) {
+              sortValue.options[sortValue.options.length] = new Option(z[i], z[i]);
+          }
+      }
+
+
+  d3.csv("bestsellers.csv", function(data) {
+
+      var book_Height_Price_Scale = d3.scaleLinear()
+          .domain([3.3, 4.9])
+          .range([10, 95]);
+      var book_Width_Reviews_Scale = d3.scaleLinear()
+          .domain([32, 80000])
+          .range([15, 45]);
+      var book_Inner_Width_Rating_Scale = d3.scaleLinear()
+          .domain([3, 105])
+          .range([0, 30]);
+      // var book_Fill_Price_Scale = d3.scaleLinear()
+      //     .domain([3, 105])
+      //     .range([20, 80]);
+      var book_Fill_Price_Scale = d3.scaleLinear()
+          .domain([3, 105])
+          .range([0.3, 1]);
+
+      var book_Black_Dot_Price_Scale = d3.scaleLinear()
+          .domain([3, 105])
+          .range([3, 8]);
+
+      createBooks();
+
+
+      function createBooks(sortColumn="", sortValue="", filterColumn="", filterValue="") {
+
+          var height_shelf = 100;
+          var height_book = 70; // between 50 and 70
+          var width_book = 21; //between 15-21
+          var space_between_books = 2;
+          var start_book = 10;
+          var year = 2008;
+          var bookNumber = 0;
+          var filtered_sorted_data = data;
+
+          if(sortColumn=="Name") {
+              if(sortValue == "A-Z"){
+                  filtered_sorted_data = data.sort((a,b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+                  console.log(filtered_sorted_data);
+              }
+              else if (sortValue == "Z-A"){
+                  filtered_sorted_data = data.sort((a,b) => (a.Name > b.Name) ? 1 : ((b.Name > a.Name) ? -1 : 0));
+                  console.log(filtered_sorted_data);
+              }
+          }
+
+          if(filterColumn=="Price") {
+              if(filterValue == "$3-24"){
+                  filtered_sorted_data = data.filter(function (e) {
+                      return +e['Price'] <= 24;
+                  });
+                  console.log(filtered_sorted_data);
+              }
+              else if (filterValue == "$25-150"){
+                  filtered_sorted_data = data.filter(function (e) {
+                      return +e['Price'] > 24;
+                  });
+                  console.log(filtered_sorted_data);
+              }
+          }
+          if(filterColumn=="Genre") {
+              filtered_sorted_data = data.filter(function (e) {
+                  return e['Genre'] == filterValue;
+              });
+          }
+          for (var j = 1; j <= 11; j++) {
+                var makeShelf = d3.select("#shelf-svg").append("rect")
+              .attr("x", 0)
+              .attr("y", height_shelf)
+              .attr("width", 1200)
+              .attr("height", 50)
+              .attr("class", 'one-shelf');
+
+
+              var currentYear = j + year;
+
+
+              var dataOfYear = filtered_sorted_data.filter(function (e) {
+                  return +e['Year'] == currentYear;
+              });
+              console.log(dataOfYear);
+              //data.sort((a, b) => (a.Genre > b.Genre) ? 1 : ((b.Genre > a.Genre) ? -1 : 0))
+
+              for (var i = 0; i < dataOfYear.length; i++) {
+                  width_book = book_Width_Reviews_Scale(dataOfYear[i]['Reviews']);
+                  height_book = book_Height_Price_Scale(dataOfYear[i]['User Rating']);
+                  height_inner_book = book_Inner_Width_Rating_Scale(dataOfYear[i]['User Rating']);
+                  fill_book = book_Fill_Price_Scale(dataOfYear[i]['Price']);
+                  opacity_book = book_Fill_Price_Scale(dataOfYear[i]['Price']);
+                  blackdot_radius_book = book_Black_Dot_Price_Scale(dataOfYear[i]['Price']);
+
+                  var makeBook = d3.select("#shelf-svg").append("rect")
+                      .attr("id", bookNumber)
+                      .attr("x", start_book)
+                      .attr("y", height_shelf - height_book)
+                      .attr("width", width_book)
+                      .attr("height", height_book)
+                      .style("stroke", "#53504D")
+                      .on("mouseover", function (d) {
+                          var current_height = +d3.select(this).attr("y");
+                          var index = +d3.select(this).attr("id");
+                          d3.select(this).attr("y", current_height - 10);
+
+                          d3.select("#bookdetails").html(filtered_sorted_data[index]['Name'].toUpperCase() + "<br><span style='color:#918E8B;font-size: 0.85rem;'>By "
+                              + filtered_sorted_data[index]['Author'] + "</span><br><span class=\"tag\">"+filtered_sorted_data[index]['Year']+"</span>" +  "<span class=\"tag\">"
+                              +filtered_sorted_data[index]['Genre']+"</span>" +  "<span class=\"tag\">$"
+                              +filtered_sorted_data[index]['Price']+"</span>" + "<br><span style='font-size: 0.85rem;'>Rated <strong>" +filtered_sorted_data[index]['User Rating']+ "</strong> by " + filtered_sorted_data[index]['Reviews'] + " readers </span>"
+                        );
+
+                      })
+                      .on("mouseout", function (d) {
+                          var current_height = +d3.select(this).attr("y");
+                          d3.select(this).attr("y", current_height + 10);
+                      });
+
+                  bookNumber = bookNumber + 1;
+
+                  if (dataOfYear[i].Genre == "Non Fiction") {
+                      //var fill = "hsla(122, 94%, "+fill_book+"%, 1)";
+                      makeBook.style("fill", "#07ED0F");
+                      //makeBook.style("opacity", opacity_book);
+                  } else {
+                      //var fill = "hsla(356, 100%, "+fill_book+"%, 1)";
+                      makeBook.style("fill", "#FF4754");
+                      //makeBook.style("opacity", opacity_book);
+                  }
+
+                  var makeInnerBook = d3.select("#shelf-svg").append("circle")
+                      .attr("cx", (start_book+width_book+start_book)/2)
+                      .attr("cy", height_shelf - (height_book/2))
+                      .attr("r", blackdot_radius_book)
+                      .style("fill", "black");
+
+
+                  // var makeInnerBook = d3.select("#shelf-svg").append("rect")
+                  //     .attr("x", start_book)
+                  //     .attr("y", height_shelf - height_inner_book)
+                  //     .attr("width", width_book)
+                  //     .attr("height", height_inner_book)
+                  //     .style("stroke", "#53504D");
+                  //
+                  // if (data[i * j].Genre == "Non Fiction") {
+                  //     makeInnerBook.style("fill", "#07ED0F");
+                  // } else {
+                  //     makeInnerBook.style("fill", "#FF4754");
+                  // }
+
+
+                  start_book = start_book + width_book + space_between_books;
+              }
+
+              start_book = 10;
+              height_shelf = height_shelf + 150;
+
+
+          }
+          var year = 2009;
+          var text_y = 100;
+          for (var j = 1; j <= 11; j++) {
+              d3.select("#shelf-svg").append("text")
+                  .attr("x", 10)
+                  .attr("y", text_y + 20)
+                  .attr("fill", 'white')
+                  .text(year);
+
+              text_y = text_y + 150;
+              year++;
+          }
+      }
+
+
+
+      function removeAll(){
+          d3.selectAll("rect").remove();
+          d3.selectAll("text").remove();
+          d3.selectAll("circle").remove();
+          d3.select("#bookdetails").html("");
+      }
+
+      filterValue.onchange = function() {
+          removeAll();
+          createBooks("","",filterColumn.value,filterValue.value);
+      }
+
+      sortValue.onchange = function() {
+          removeAll();
+          createBooks(sortColumn.value,sortValue.value);
+      }
+
+      // d3.select("#selectButtonGenre").on("change", function(d) {
+      //     // recover the option that has been chosen
+      //     var selectedOption = d3.select(this).property("value")
+      //     removeAll();
+      //     // run the updateChart function with this selected option
+      //     //createBooks("","","Genre", "Fiction");
+      //     createBooks("","","Genre",selectedOption);
+      // })
+  });
+
+</script>
